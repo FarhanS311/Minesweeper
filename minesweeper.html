@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper</title>
+    <style>
+        #game-area{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #stats{
+            display:flex;
+            justify-content: space-around;
+            align-items: center;
+
+            height: 15vh;
+            width: 80vw;
+            margin: 2%;
+
+            background-color: lightblue;
+            font-size: xx-large;
+            border: 2px solid gray;
+            border-radius: 5px;
+        }
+        #mine-grid{
+            display: grid;
+            grid-template-columns: repeat(9, 1fr); 
+            grid-template-rows: repeat(9, 1fr); 
+            /* gap: 1px 1px; */
+
+            width: 70vh;
+            height: 70vh;
+
+        }
+        .cell{
+            border: 2px solid gray;
+            caret-color: transparent;
+            /* border-radius: 8px;
+            background: linear-gradient(315deg, #fdfafa, #d4d3d3);
+            box-shadow:  -5px -5px 10px #bfbebe,
+             5px 5px 10px #ffffff; */
+        }
+        .cell:hover{
+            border: 3px solid yellow;
+        }
+        .safe{
+            background-color: green;
+            border: 2px solid darkgreen;
+        }
+        .bomb{
+            background-image: url("https://img.icons8.com/emoji/48/000000/bomb-emoji.png");
+            border: 2px solid red;
+        }
+        .clickedBomb{
+            border: 2px solid blue;
+        }
+        #resetButton{
+            height: 8vh;
+            font-size: xx-large;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-area">
+        <div id="stats">
+            <span id="resultDisplay">Result</span>
+            <span id="gameScore">Gamescore</span>
+            <button id="resetButton" onclick="newGame()">Reset</button>
+        </div>
+        <div id="mine-grid"></div>
+    </div>
+
+    <script>
+
+        var bombPos, isOpen, score;
+
+        let mineGrid = document.getElementById('mine-grid');
+        for(let i=1; i<=81; i++){
+            let cell = document.createElement('div');
+            cell.setAttribute('id',`cell_${i}`);
+            cell.setAttribute('class','cell');
+            mineGrid.appendChild(cell);
+        }
+
+        const newGame = ()=>{
+
+            const safeCells = document.getElementsByClassName("safe");
+            const unsafeCells = document.getElementsByClassName("unsafe");
+            if(document.getElementsByClassName("clickedBomb").length!=0){
+                document.getElementsByClassName("clickedBomb")[0].classList.remove("clickedBomb");
+            }
+            while(safeCells.length!=0){
+                safeCells[0].classList.remove("safe");
+            }
+            while(unsafeCells.length!=0){
+                unsafeCells[0].classList.remove("unsafe",'bomb');
+            }
+
+            score=0;
+            document.getElementById("resultDisplay").innerHTML="--RESULT--";
+            document.getElementById("gameScore").innerHTML=score;
+            
+
+            for(let i=0; i<10; i++){
+                let bombCell =  Math.floor((Math.random()*81)+1);
+                if(document.getElementById(`cell_${bombCell}`).classList.contains("unsafe")){
+                    i--;
+                }
+                else{
+                    document.getElementById(`cell_${bombCell}`).classList.add("unsafe");
+                }
+            }
+
+            isOpen = new Array();
+            for(let i=0; i<82; i++){
+                isOpen.push(false);
+            }
+        }
+        
+        const cells = document.getElementsByClassName('cell');
+        for(let i=0; i<81; i++){
+            cells[i].addEventListener('click',(event)=>{
+                let index = parseInt((event.target.id).substring(5));
+                let cellClicked = document.getElementById(event.target.id);
+                if(!isOpen[index]){
+                    isOpen[index]=true;
+                    if(cellClicked.classList.contains("unsafe")){
+                        cellClicked.classList.add("clickedBomb");
+                        let explodedCells = document.getElementsByClassName("unsafe");
+                        for(let i=0; i<10; i++){
+                            explodedCells[i].classList.add('bomb');
+                        }
+                        for(let i=0; i<82; i++){
+                            isOpen[i]=true;
+                        }
+                        document.getElementById("resultDisplay").innerHTML="LOSE";
+                        alert("Oops, you stepped on a mine");
+                    }
+                    else{
+                        cellClicked.classList.add("safe");
+                        score++;
+                        document.getElementById("gameScore").innerHTML=score;
+                        if(score==71){
+                            document.getElementById("resultDisplay").innerHTML="WON";
+                            alert("OMG, you won !!!");
+                        }
+                    }
+                }
+            });
+        }
+
+        newGame();
+
+    </script>
+
+</body>
+</html>
